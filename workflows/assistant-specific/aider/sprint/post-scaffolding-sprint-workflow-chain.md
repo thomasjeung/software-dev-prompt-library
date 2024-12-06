@@ -4,7 +4,7 @@
 
 **Note: This workflow is designed for projects that have already completed their initial scaffolding (Sprint 1). It assumes basic project structure, initial dependencies, and core technologies are already in place.**
 
-Below is a visual representation of the workflow (simplified for brevity - not all phase inputs are shown). Also each phase has an associated prompt to guide the developer through that phase (i.e. phase = prompt).
+Below is a visual representation of the workflow (simplified for brevity). Also each phase has an associated prompt to guide the developer through that phase (i.e. phase = prompt).
 
 ![Post-Scaffolding Sprint Workflow Chain](../../../../images/post-scaffolding-sprint-workflow.png)
 
@@ -18,8 +18,10 @@ Phase 1: Implementation Status Analysis
 Phase 2: Sprint Story Generation
 ↓ [Outputs feed Phase 3]
 Phase 3: Story Analysis
-↓ [Outputs feed Phase 4]
-Phase 4: Story Implementation
+↓ [Outputs feed Phase 4A]
+Phase 4A: Story Steps Implementation
+↓ [Outputs feed Phase 4B]
+Phase 4B: Unit Testing
 ```
 
 ## Input/Output Chain
@@ -57,21 +59,49 @@ Break down user stories into atomic, implementable functional steps
 **Initial Inputs Required:**
 - Sprint story for S<X.Y>
 
-**Key Outputs → [Feed into Phase 4]:**
+**Key Outputs → [Feed into Phase 4A]:**
 - Story Steps Report (`S<X.Y>-story-steps.md`)
 
-### Phase 4: Story Steps Implementation (`#implement-step S<X.Y>  [step-number]`)
+### Phase 4A: Story Steps Implementation (`#implement-step S<X.Y> [step-number]`)
 [Implementation Prompt](../../../../prompts/coding/assistant-specific/aider/implementation-prompt.md)
 #### Purpose
-Systematically implement one specific step from the story analysis, ensuring all requirements are met using only approved dependencies
+Systematically implement one specific step from the story analysis, ensuring all requirements are met using only approved dependencies.
+
+**Key Outputs → [Feed into Phase 4B]:**
+- Code changes implementing the specified step
+
+**Iteration Note:**
+Phases 4A and 4B iterate until all steps for a user story have been implemented and unit tested.
+
+### Phase 4B: Story Steps Unit Testing (`#generate-tests S<X.Y> [step-number]`)
+[Unit Test Generation Prompt](../../../../prompts/testing/assistant-specific/aider/unit-test-prompt.md)
+#### Purpose
+Generate and verify unit tests for the implemented story step, ensuring comprehensive test coverage.
 
 **Required Inputs (including Phase 3 outputs):**
 - Story Steps Report (`S<X.Y>-story-steps.md`)
 - Sprint story
 - Project's dependency definition file (e.g., package.json)
 
-**Key Outputs:**
+**Key Outputs → [Feed into Phase 4B]:**
 - Code changes implementing the specified step
+
+**Conditional Prompt:**
+During the implementation phase, if the Implementation Prompt determines that new dependencies may be required to implement a user story step, it will prompt the user to execute the Dependency Management Prompt. This ensures that all necessary dependencies are evaluated and approved before proceeding with the implementation.
+
+**Note:** For more details on managing dependencies, refer to the [Dependency Management Prompt](../../../../prompts/coding/assistant-specific/aider/dependency-management-prompt.md).
+
+### Phase 4B: Unit Testing (`#generate-tests S<X.Y> [step-number]`)
+[Unit Test Generation Prompt](../../../../prompts/testing/assistant-specific/aider/unit-test-prompt.md)
+#### Purpose
+Generate and verify unit tests for the implemented story step, ensuring comprehensive test coverage.
+
+**Required Inputs (including Phase 4 outputs):**
+- Code changes implementing the specified step
+
+**Key Outputs:**
+- Unit tests for the implemented step
+- Test results indicating pass/fail status
 
 ## Workflow Chain Execution
 
@@ -129,6 +159,12 @@ Implementation Status Analysis
                     ├── Story Steps Report (S<X.Y>-story-steps.md)
                     ├── Sprint story
                     └── Project's dependency definition file (e.g., package.json)
+                        └── Outputs required for Story Implementation:
+                            ├── Code changes implementing the specified step
+                            └── Story Steps Report (S<X.Y>-story-steps.md)
+                                └── Outputs required for Unit Testing:
+                                    ├── Unit tests for the implemented step
+                                    └── Test results indicating pass/fail status
 ```
 
 ## Maintaining Chain Integrity
